@@ -18,7 +18,8 @@ cabal-version:       >=1.10
 library
   -- exposed-modules:     
   other-modules:       TSQuery.Query,
-                       TSQuery.TH
+                       TSQuery.TH,
+                       TSQuery.Test
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.7,
                        text,

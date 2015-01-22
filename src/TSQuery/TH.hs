@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+
 module TSQuery.TH where
 
 import Language.Haskell.TH
@@ -5,16 +7,17 @@ import Language.Haskell.TH
 import Control.Applicative
 import Control.Monad
 
+import qualified Data.Text                    as T
 import Data.Maybe (fromMaybe, listToMaybe)
 
 import TSQuery.Query
 
-internalDeriveSafeData :: Name -> Q [Dec]
-internalDeriveSafeData tyName = do
+mkTSEntities :: Bool -> Name -> Q [Dec]
+mkTSEntities literal tyName = do
   info <- reify tyName
   case info of
     TyConI (DataD context _name tyvars cons _derivs)
-      | length cons > 255 -> fail $ "Can't derive SafeData instance for: " ++ show tyName ++
+      | length cons > 255 -> fail $ "Can't derive entities for: " ++ show tyName ++
                                     ". The datatype must have less than 256 constructors."
       | otherwise         -> worker context tyvars (zip [0..] cons)
     TyConI (NewtypeD context _name tyvars con _derivs) ->
@@ -26,21 +29,13 @@ internalDeriveSafeData tyName = do
               worker' (foldl appT (conT tyName) (map return ty)) context [] (zip [0..] cons)
           NewtypeInstD context _name ty con _derivs ->
               worker' (foldl appT (conT tyName) (map return ty)) context [] [(0, con)]
-          _ -> fail $ "Can't derive SafeData instance for: " ++ show (tyName, inst)
+          _ -> fail $ "Can't derive entities instance for: " ++ show (tyName, inst)
       return $ concat decs
-    _ -> fail $ "Can't derive SafeData instance for: " ++ show (tyName, info)
+    _ -> fail $ "Can't derive entities instance for: " ++ show (tyName, info)
   where
     worker = worker' (conT tyName)
-    worker' = undefined
-    {-
-    worker' tyBase context tyvars cons =
-      let ty = foldl appT tyBase [ varT var | PlainTV var <- tyvars ]
-      in (:[]) <$> instanceD (cxt $ [classP ''SafeData [varT var] | PlainTV var <- tyvars] ++ map return context)
-                                       (conT ''SafeData `appT` ty)
-                                       [ mkPutCopy (show tyName) (fromIntegral $ unVersion versionId) deriveType cons
-                                       , mkGetCopy deriveType (show tyName) cons
-                                       , valD (varP 'version) (normalB $ litE $ integerL $ fromIntegral $ unVersion versionId) []
-                                       , valD (varP 'kind) (normalB (varE kindName)) []
-                                       , funD 'errorTypeName [clause [wildP] (normalB $ litE $ StringL (show tyName)) []]
-                                       ]
-    -}
+    worker' tyBase context tyvars cons = sequence $ mkFields (map snd cons)
+    cFields = map (\(name, _, _) -> mkName $ (nameBase name))
+    prfField name = mkName $ "_" ++ (nameBase name)
+    mkField name = valD (varP $ prfField name) (normalB $ conE 'Entity `appE` ((varE 'T.pack) `appE` (litE $ stringL $ nameBase name))) []
+    mkFields cons = [ mkField field | (RecC _ fields) <- cons, field <- cFields fields ]
