@@ -17,9 +17,11 @@ cabal-version:       >=1.10
 
 library
   -- exposed-modules:     
-  other-modules:       TSQuery.Query
+  other-modules:       TSQuery.Query,
+                       TSQuery.TH
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.7,
-                       text
+                       text,
+                       template-haskell
   hs-source-dirs:      src
   default-language:    Haskell2010

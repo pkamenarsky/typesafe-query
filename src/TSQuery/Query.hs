@@ -16,7 +16,7 @@ data Query a = forall b. Eq b  => QEq (Entity a b) b
              | forall b. Eq b  => QNEq (Entity a b) b
              | forall b. Ord b => QGrt (Entity a b) b
              | forall b. Ord b => QLs (Entity a b) b
-             | forall b. Eq b  => QIn (Entity a [b]) b
+             | forall b. Eq b  => QCnt (Entity a [b]) b
              |                    QOr (Query a) (Query a)
              |                    QAnd (Query a) (Query a)
              |                    QNot (Query a)
@@ -30,11 +30,11 @@ grt = QGrt
 ls :: Ord b => Entity a b -> b -> Query a
 ls = QLs
 
-qin :: Eq b => Entity a [b] -> b -> Query a
-qin = QIn
+contains :: Eq b => Entity a [b] -> b -> Query a
+contains = QCnt
 
-mor :: Query a -> Query a -> Query a
-mor = QOr
+or :: Query a -> Query a -> Query a
+or = QOr
 
-mselect :: Query a -> a
-mselect = undefined
+select :: Query a -> a
+select = undefined
