@@ -2,6 +2,7 @@
 
 module TSQuery.Query where
 
+import           Prelude hiding ((.))
 import           Control.Category
 
 import qualified Data.Text                    as T
@@ -10,7 +11,13 @@ data Entity a b = Entity T.Text deriving Show
 
 instance Category Entity where
   id = Entity ""
-  (Entity a) . (Entity b) = Entity (a `T.append` "." `T.append` b)
+  (Entity a) . (Entity b) = Entity (b `T.append` "." `T.append` a)
+
+(.+) :: Entity a b -> Entity b c -> Entity a c
+(Entity a) .+ (Entity b) = Entity (a `T.append` "." `T.append` b)
+
+showEntity :: Entity a b -> T.Text
+showEntity (Entity text) = text
 
 data Query a = forall b. Eq b  => QEq (Entity a b) b
              | forall b. Eq b  => QNEq (Entity a b) b
@@ -35,6 +42,3 @@ contains = QCnt
 
 or :: Query a -> Query a -> Query a
 or = QOr
-
-select :: Query a -> a
-select = undefined
