@@ -11,6 +11,8 @@ import qualified Data.Text                    as T
 
 import           TSQuery.Query
 
+data O
+
 mkTSEntities :: Bool -> Name -> Q [Dec]
 mkTSEntities _literal tyName = do
   info <- reify tyName
@@ -33,7 +35,10 @@ mkTSEntities _literal tyName = do
     _ -> fail $ "Can't derive entities instance for: " ++ show (tyName, info)
   where
     worker cons = sequence $ mkFields cons
-    cFields = map (\(name, _, _) -> mkName $ (nameBase name))
+    cFields = map (\(name, _, ty) -> (ty, mkName $ (nameBase name)))
     prfField name = mkName $ "_" ++ (nameBase name)
     mkField name = valD (varP $ prfField name) (normalB $ conE 'Entity `appE` ((varE 'T.pack) `appE` (litE $ stringL $ nameBase name))) []
-    mkFields cons = map mkField $ nub [ field | (RecC _ fields) <- cons, field <- cFields fields ]
+    mkSig (ConT tyN) name = sigD (prfField name) (conT ''Entity `appT` conT tyName `appT` conT tyN)
+    mkSig _ _ = fail "Can't derive entity declaration for complex type"
+    mk (ty, name) = [mkSig ty name, mkField name]
+    mkFields cons = concatMap mk $ nub [ field | (RecC _ fields) <- cons, field <- cFields fields ]
