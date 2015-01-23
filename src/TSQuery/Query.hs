@@ -23,8 +23,9 @@ showEntity (Entity text) = text
 data Query a =                 QAll
  | forall b. (Val b, Eq  b) => QEq  (Entity a b) b
  | forall b. (Val b, Eq  b) => QNeq (Entity a b) b
- | forall b. (Val b, Ord b) => QGrt (Entity a b) b
- | forall b. (Val b, Ord b) => QLs  (Entity a b) b
+ | forall b. (Val b, Ord b) => QGt  (Entity a b) b
+ | forall b. (Val b, Ord b) => QLt  (Entity a b) b
+ | forall b. (Val b)        => QBin (Entity a b) b T.Text
  | forall b. (Val b, Eq  b) => QCnt (Entity a [b]) b
  |                             QOr  (Query a) (Query a)
  |                             QAnd (Query a) (Query a)
@@ -36,11 +37,14 @@ eq = QEq
 neq :: (Val b, Eq b) => Entity a b -> b -> Query a
 neq = QNeq
 
-grt :: (Val b, Ord b) => Entity a b -> b -> Query a
-grt = QGrt
+gt :: (Val b, Ord b) => Entity a b -> b -> Query a
+gt = QGt
 
-ls :: (Val b, Ord b) => Entity a b -> b -> Query a
-ls = QLs
+lt :: (Val b, Ord b) => Entity a b -> b -> Query a
+lt = QLt
+
+bin :: (Val b) => Entity a b -> b -> T.Text -> Query a
+bin = QBin
 
 contains :: (Val b, Eq b) => Entity a [b] -> b -> Query a
 contains = QCnt
