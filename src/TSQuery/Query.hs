@@ -40,5 +40,11 @@ ls = QLs
 contains :: Eq b => Entity a [b] -> b -> Query a
 contains = QCnt
 
-or :: Query a -> Query a -> Query a
-or = QOr
+qor :: Query a -> Query a -> Query a
+qor = QOr
+
+qand :: Query a -> Query a -> Query a
+qand = QAnd
+
+qnot :: Query a -> Query a
+qnot = QNot
