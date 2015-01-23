@@ -17,23 +17,24 @@ instance Category Entity where
 (.+) :: Entity a b -> Entity b c -> Entity a c
 (Entity a) .+ (Entity b) = Entity (a `T.append` "." `T.append` b)
 
-showEntity :: Entity a b -> T.Text
-showEntity (Entity text) = text
-
-data Query a op =       QAll
+data QueryExpOp op a =  QAll
  | forall b. (Val b) => QBin op (Entity a b) b
- |                      QOr  (Query a op) (Query a op)
- |                      QAnd (Query a op) (Query a op)
- |                      QNot (Query a op)
+ |                      QOr  (QueryExpOp op a) (QueryExpOp op a)
+ |                      QAnd (QueryExpOp op a) (QueryExpOp op a)
+ |                      QNot (QueryExpOp op a)
 
-qall :: Query a op
+qall, (.*) :: QueryExpOp op a
 qall = QAll
+(.*) = QAll
 
-qor :: Query a op -> Query a op -> Query a op
-qor = QOr
+qor, (.||) :: QueryExpOp op a -> QueryExpOp op a -> QueryExpOp op a
+qor   = QOr
+(.||) = QOr
 
-qand :: Query a op -> Query a op -> Query a op
-qand = QAnd
+qand, (.&&) :: QueryExpOp op a -> QueryExpOp op a -> QueryExpOp op a
+qand  = QAnd
+(.&&) = QAnd
 
-qnot :: Query a op -> Query a op
+qnot, (.^) :: QueryExpOp op a -> QueryExpOp op a
 qnot = QNot
+(.^) = QNot
