@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, OverloadedStrings #-}
+{-# LANGUAGE ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, OverloadedStrings #-}
 
 module TSQuery.Query where
 
@@ -19,15 +19,25 @@ instance Category Entity where
 showEntity :: Entity a b -> T.Text
 showEntity (Entity text) = text
 
-data Query a =                    QAll
-             | forall b. Eq b  => QEq (Entity a b) b
-             | forall b. Eq b  => QNEq (Entity a b) b
-             | forall b. Ord b => QGrt (Entity a b) b
-             | forall b. Ord b => QLs (Entity a b) b
-             | forall b. Eq b  => QCnt (Entity a [b]) b
-             |                    QOr (Query a) (Query a)
-             |                    QAnd (Query a) (Query a)
-             |                    QNot (Query a)
+class CQuery q v where
+  call :: q a
+  ceq  :: Eq v  => Entity a v   -> v -> q a
+  cneq :: Eq v  => Entity a v   -> v -> q a
+  cgrt :: Ord v => Entity a v   -> v -> q a
+  cls  :: Ord v => Entity a v   -> v -> q a
+  cin  :: Ord v => Entity a [v] -> v -> q a
+  cand :: q a -> q a -> q a
+  cor  :: q a -> q a -> q a
+
+data Query a =        QAll
+ | forall b. Eq b  => QEq (Entity a b) b
+ | forall b. Eq b  => QNEq (Entity a b) b
+ | forall b. Ord b => QGrt (Entity a b) b
+ | forall b. Ord b => QLs (Entity a b) b
+ | forall b. Eq b  => QCnt (Entity a [b]) b
+ |                    QOr (Query a) (Query a)
+ |                    QAnd (Query a) (Query a)
+ |                    QNot (Query a)
 
 eq :: Eq b => Entity a b -> b -> Query a
 eq = QEq
