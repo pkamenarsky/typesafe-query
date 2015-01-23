@@ -23,6 +23,9 @@ data QueryExpOp op a =  QAll
  |                      QAnd (QueryExpOp op a) (QueryExpOp op a)
  |                      QNot (QueryExpOp op a)
 
+instance Show op => Show (QueryExpOp op a) where
+  show _ = error "Show instance not yet defined"
+
 qall, (.*) :: QueryExpOp op a
 qall = QAll
 (.*) = QAll
