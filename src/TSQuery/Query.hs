@@ -20,43 +20,20 @@ instance Category Entity where
 showEntity :: Entity a b -> T.Text
 showEntity (Entity text) = text
 
-data Query a =                 QAll
- | forall b. (Val b, Eq  b) => QEq  (Entity a b) b
- | forall b. (Val b, Eq  b) => QNeq (Entity a b) b
- | forall b. (Val b, Ord b) => QGt  (Entity a b) b
- | forall b. (Val b, Ord b) => QLt  (Entity a b) b
- | forall b. (Val b)        => QBin (Entity a b) b T.Text
- | forall b. (Val b, Eq  b) => QCnt (Entity a [b]) b
- |                             QOr  (Query a) (Query a)
- |                             QAnd (Query a) (Query a)
- |                             QNot (Query a)
+data Query a op =       QAll
+ | forall b. (Val b) => QBin op (Entity a b) b
+ |                      QOr  (Query a op) (Query a op)
+ |                      QAnd (Query a op) (Query a op)
+ |                      QNot (Query a op)
 
-eq :: (Val b, Eq b) => Entity a b -> b -> Query a
-eq = QEq
-
-neq :: (Val b, Eq b) => Entity a b -> b -> Query a
-neq = QNeq
-
-gt :: (Val b, Ord b) => Entity a b -> b -> Query a
-gt = QGt
-
-lt :: (Val b, Ord b) => Entity a b -> b -> Query a
-lt = QLt
-
-bin :: (Val b) => Entity a b -> b -> T.Text -> Query a
-bin = QBin
-
-contains :: (Val b, Eq b) => Entity a [b] -> b -> Query a
-contains = QCnt
-
-qall :: Query a
+qall :: Query a op
 qall = QAll
 
-qor :: Query a -> Query a -> Query a
+qor :: Query a op -> Query a op -> Query a op
 qor = QOr
 
-qand :: Query a -> Query a -> Query a
+qand :: Query a op -> Query a op -> Query a op
 qand = QAnd
 
-qnot :: Query a -> Query a
+qnot :: Query a op -> Query a op
 qnot = QNot
