@@ -20,25 +20,37 @@ mkTSEntities _literal tyName = do
     TyConI (DataD _ _ _ cons _)
       | length cons > 255 -> fail $ "Can't derive entities for: " ++ show tyName ++
                                     ". The datatype must have less than 256 constructors."
-      | otherwise         -> worker cons
+      | otherwise         -> mk cons
     TyConI (NewtypeD _ _ _ con _) ->
-      worker [con]
+      mk [con]
     FamilyI _ insts -> do
       decs <- forM insts $ \inst ->
         case inst of
           DataInstD _ _ _ cons _ ->
-              worker cons
+              mk cons
           NewtypeInstD _ _ _ con _ ->
-              worker [con]
+              mk [con]
           _ -> fail $ "Can't derive entities instance for: " ++ show (tyName, inst)
       return $ concat decs
     _ -> fail $ "Can't derive entities instance for: " ++ show (tyName, info)
   where
-    worker cons = sequence $ mkFields cons
-    cFields = map (\(name, _, ty) -> (ty, mkName $ (nameBase name)))
-    prfField name = mkName $ "_" ++ (nameBase name)
-    mkField name = valD (varP $ prfField name) (normalB $ conE 'Entity `appE` ((varE 'T.pack) `appE` (litE $ stringL $ nameBase name))) []
-    mkSig (ConT tyN) name = sigD (prfField name) (conT ''Entity `appT` conT tyName `appT` conT tyN)
-    mkSig _ _ = fail "Can't derive entity declaration for complex type"
-    mk (ty, name) = [mkSig ty name, mkField name]
-    mkFields cons = concatMap mk $ nub [ field | (RecC _ fields) <- cons, field <- cFields fields ]
+    mk                 = sequence . mkFields
+
+    conFields          = map (\(name, _, ty) -> (ty, mkName $ (nameBase name)))
+
+    fmtName name       = mkName $ "_" ++ (nameBase name)
+    mkVal name         = valD (varP $ fmtName name)
+                              (normalB $ conE 'Entity
+                                       `appE` ((varE 'T.pack)
+                                       `appE` (litE $ stringL $ nameBase name))) []
+
+    mkSig (ConT tyN) name
+                       = sigD (fmtName name)
+                              (conT ''Entity `appT` conT tyName `appT` conT tyN)
+    mkSig _ _          = fail "Can't derive entity declaration for complex type"
+
+    mkField (ty, name) = [mkSig ty name, mkVal name]
+    mkFields cons      = concatMap mkField $ nub
+                           [ field
+                           | (RecC _ fields) <- cons
+                           , field <- conFields fields ]
