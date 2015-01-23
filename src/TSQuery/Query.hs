@@ -17,14 +17,11 @@ instance Category Entity where
 (.+) :: Entity a b -> Entity b c -> Entity a c
 (Entity a) .+ (Entity b) = Entity (a `T.append` "." `T.append` b)
 
-data QueryExpOp op a =  QAll
- | forall b. (Val b) => QBin op (Entity a b) b
- |                      QOr  (QueryExpOp op a) (QueryExpOp op a)
- |                      QAnd (QueryExpOp op a) (QueryExpOp op a)
- |                      QNot (QueryExpOp op a)
-
-instance Show op => Show (QueryExpOp op a) where
-  show _ = error "Show instance not yet defined"
+data QueryExpOp op a =        QAll
+ | forall b. (Eq b, Val b) => QBin op (Entity a b) b
+ |                            QOr  (QueryExpOp op a) (QueryExpOp op a)
+ |                            QAnd (QueryExpOp op a) (QueryExpOp op a)
+ |                            QNot (QueryExpOp op a)
 
 qall, (.*) :: QueryExpOp op a
 qall = QAll
