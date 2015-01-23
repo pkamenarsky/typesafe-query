@@ -34,10 +34,7 @@ mkTSEntities _literal tyName = do
       return $ concat decs
     _ -> fail $ "Can't derive entities instance for: " ++ show (tyName, info)
   where
-    mk                 = sequence . mkFields
-
     conFields          = map (\(name, _, ty) -> (ty, mkName $ (nameBase name)))
-
     fmtName name       = mkName $ "_" ++ (nameBase name)
     mkVal name         = valD (varP $ fmtName name)
                               (normalB $ conE 'Entity
@@ -54,3 +51,5 @@ mkTSEntities _literal tyName = do
                            [ field
                            | (RecC _ fields) <- cons
                            , field <- conFields fields ]
+    mk                 = sequence . mkFields
+
