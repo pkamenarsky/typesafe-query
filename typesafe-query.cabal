@@ -32,6 +32,7 @@ library
   other-modules:       TSQuery.Test
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.7,
+                       bson >= 0.3 && <0.4,
                        text,
                        template-haskell
   hs-source-dirs:      src
