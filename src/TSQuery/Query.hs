@@ -20,12 +20,12 @@ showEntity :: Entity a b -> T.Text
 showEntity (Entity text) = text
 
 data Query a =        QAll
- | forall b. Eq b  => QEq (Entity a b) b
- | forall b. Eq b  => QNEq (Entity a b) b
+ | forall b. Eq  b => QEq  (Entity a b) b
+ | forall b. Eq  b => QNeq (Entity a b) b
  | forall b. Ord b => QGrt (Entity a b) b
- | forall b. Ord b => QLs (Entity a b) b
- | forall b. Eq b  => QCnt (Entity a [b]) b
- |                    QOr (Query a) (Query a)
+ | forall b. Ord b => QLs  (Entity a b) b
+ | forall b. Eq  b => QCnt (Entity a [b]) b
+ |                    QOr  (Query a) (Query a)
  |                    QAnd (Query a) (Query a)
  |                    QNot (Query a)
 
