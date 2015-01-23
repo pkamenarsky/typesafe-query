@@ -1,4 +1,4 @@
-{-# LANGUAGE ExistentialQuantification, FlexibleInstances, MultiParamTypeClasses, OverloadedStrings #-}
+{-# LANGUAGE ExistentialQuantification, MultiParamTypeClasses, OverloadedStrings #-}
 
 module TSQuery.Query where
 
