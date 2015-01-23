@@ -19,7 +19,8 @@ instance Category Entity where
 showEntity :: Entity a b -> T.Text
 showEntity (Entity text) = text
 
-data Query a = forall b. Eq b  => QEq (Entity a b) b
+data Query a =                    QAll
+             | forall b. Eq b  => QEq (Entity a b) b
              | forall b. Eq b  => QNEq (Entity a b) b
              | forall b. Ord b => QGrt (Entity a b) b
              | forall b. Ord b => QLs (Entity a b) b
@@ -39,6 +40,9 @@ ls = QLs
 
 contains :: Eq b => Entity a [b] -> b -> Query a
 contains = QCnt
+
+qall :: Query a
+qall = QAll
 
 qor :: Query a -> Query a -> Query a
 qor = QOr

@@ -27,10 +27,9 @@ library
   if !flag(devel)
     ghc-options: -Werror
 
-  -- exposed-modules:     
-  other-modules:       TSQuery.Query,
-                       TSQuery.TH,
-                       TSQuery.Test
+  exposed-modules:     TSQuery.Query,
+                       TSQuery.TH
+  other-modules:       TSQuery.Test
   -- other-extensions:    
   build-depends:       base >=4.6 && <4.7,
                        text,
