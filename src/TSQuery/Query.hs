@@ -17,6 +17,9 @@ instance Category Entity where
 (.+) :: Entity a b -> Entity b c -> Entity a c
 (Entity a) .+ (Entity b) = Entity (a `T.append` "." `T.append` b)
 
+class Nameable a where
+  name :: a -> T.Text
+
 data QueryExpOp op a =        QAll
  | forall b. (Eq b, Val b) => QBin op (Entity a b) b
  |                            QOr  (QueryExpOp op a) (QueryExpOp op a)

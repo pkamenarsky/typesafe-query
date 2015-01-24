@@ -34,22 +34,28 @@ mkTSEntities _literal tyName = do
       return $ concat decs
     _ -> fail $ "Can't derive entities instance for: " ++ show (tyName, info)
   where
-    conFields          = map (\(name, _, ty) -> (ty, mkName $ (nameBase name)))
-    fmtName name       = mkName $ "_" ++ (nameBase name)
-    mkVal name         = valD (varP $ fmtName name)
-                              (normalB $ conE 'Entity
-                                       `appE` ((varE 'T.pack)
-                                       `appE` (litE $ stringL $ nameBase name))) []
+    conFields           = map (\(fname, _, ty) -> (ty, mkName $ (nameBase fname)))
+    fmtName fname       = mkName $ "_" ++ (nameBase fname)
+    mkVal fname         = valD (varP $ fmtName fname)
+                               (normalB $ conE 'Entity
+                                        `appE` ((varE 'T.pack)
+                                        `appE` (litE $ stringL $ nameBase fname))) []
 
-    mkSig (ConT tyN) name
-                       = sigD (fmtName name)
-                              (conT ''Entity `appT` conT tyName `appT` conT tyN)
-    mkSig _ _          = fail "Can't derive entity declaration for complex type"
+    mkSig (ConT tyN) fname
+                        = sigD (fmtName fname)
+                               (conT ''Entity `appT` conT tyName `appT` conT tyN)
+    mkSig _ _           = fail "Can't derive entity declaration for complex type"
 
-    mkField (ty, name) = [mkSig ty name, mkVal name]
-    mkFields cons      = concatMap mkField $ nub
-                           [ field
-                           | (RecC _ fields) <- cons
-                           , field <- conFields fields ]
-    mk                 = sequence . mkFields
+    mkNameable          = instanceD (return []) (appT (conT ''Nameable) (conT tyName))
+                            [funD 'name
+                              [clause [varP $ mkName "_coll"]
+                                      (normalB $ (varE 'T.pack) `appE`
+                                                 (litE $ stringL $ show tyName))
+                                      []]]
 
+    mkField (ty, fname) = [mkSig ty fname, mkVal fname]
+    mkFields cons       = mkNameable : concatMap mkField
+                            (nub [ field
+                                 | (RecC _ fields) <- cons
+                                 , field <- conFields fields ])
+    mk                  = sequence . mkFields
