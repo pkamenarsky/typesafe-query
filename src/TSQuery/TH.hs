@@ -11,8 +11,7 @@ import qualified Data.Text                    as T
 
 import           TSQuery.Query
 
-singleton :: a -> [a]
-singleton = (:[])
+data O
 
 mkTSEntities :: Bool -> Name -> Q [Dec]
 mkTSEntities _literal tyName = do
@@ -39,8 +38,8 @@ mkTSEntities _literal tyName = do
     fmtName name       = mkName $ "_" ++ (nameBase name)
     mkVal name         = valD (varP $ fmtName name)
                               (normalB $ conE 'Entity
-                                `appE` (listE [(varE 'T.pack) `appE` (litE $ stringL $ show tyName)])
-                                `appE` ((varE 'T.pack) `appE` (litE $ stringL $ nameBase name))) []
+                                       `appE` ((varE 'T.pack)
+                                       `appE` (litE $ stringL $ nameBase name))) []
 
     mkSig (ConT tyN) name
                        = sigD (fmtName name)
