@@ -5,7 +5,6 @@ module TSQuery.Query where
 import           Prelude hiding ((.))
 import           Control.Category
 
-import           Data.Bson
 import qualified Data.Text                    as T
 
 data Entity a b = Entity T.Text deriving Show
@@ -20,11 +19,11 @@ instance Category Entity where
 class Nameable a where
   name :: a -> T.Text
 
-data QueryExpOp op a =        QAll
- | forall b. (Eq b, Val b) => QBin op (Entity a b) b
- |                            QOr  (QueryExpOp op a) (QueryExpOp op a)
- |                            QAnd (QueryExpOp op a) (QueryExpOp op a)
- |                            QNot (QueryExpOp op a)
+data QueryExpOp op a = QAll
+ | forall b. (Eq b) => QBin op (Entity a b) b
+ |                     QOr  (QueryExpOp op a) (QueryExpOp op a)
+ |                     QAnd (QueryExpOp op a) (QueryExpOp op a)
+ |                     QNot (QueryExpOp op a)
 
 qall, (.*) :: QueryExpOp op a
 qall = QAll
