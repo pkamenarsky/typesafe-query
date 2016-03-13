@@ -13,8 +13,8 @@ import           TSQuery.Query
 
 data O
 
-mkTSEntities :: Bool -> Name -> Q [Dec]
-mkTSEntities _literal tyName = do
+mkTSEntities :: Name -> Q [Dec]
+mkTSEntities tyName = do
   info <- reify tyName
   case info of
     TyConI (DataD _ _ _ cons _)
@@ -41,10 +41,8 @@ mkTSEntities _literal tyName = do
                                         `appE` ((varE 'T.pack)
                                         `appE` (litE $ stringL $ nameBase fname))) []
 
-    mkSig (ConT tyN) fname
-                        = sigD (fmtName fname)
-                               (conT ''Entity `appT` conT tyName `appT` conT tyN)
-    mkSig _ _           = fail "Can't derive entity declaration for complex type"
+    mkSig ty fname      = sigD (fmtName fname)
+                               (conT ''Entity `appT` conT tyName `appT` pure ty)
 
     mkNameable          = instanceD (return []) (appT (conT ''Nameable) (conT tyName))
                             [funD 'name
